@@ -1,0 +1,14 @@
+(load "ast.carp")
+(load "Test.carp")
+(use Test)
+
+(deftest test
+  (assert-dynamic-op test
+    {'value '(a 1 2.0f) 'type 'application 'function {'value 'a 'type 'symbol}
+     'arguments (list {'value 1 'type 'number 'width 'int}
+                      {'value 2 'type 'number 'width 'float})}
+    (AST.annotate '(a 1 2.0f))
+    "test that annotating works"
+    Dynamic.Map.=
+  )
+)

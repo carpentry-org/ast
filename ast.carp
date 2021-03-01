@@ -1,0 +1,93 @@
+(defmodule AST
+  (defndynamic annotate [l] l)
+
+  (defndynamic annotate-def [static? l]
+    {'value l 'type 'def 'name (cadr l) 'bound-to (AST.annotate (caddr l))
+     'static? static?})
+
+  (defndynamic annotate-defn [static? l]
+    {'value l 'type 'defn 'name (cadr l) 'arguments (caddr l)
+     'body (AST.annotate (cadddr l)) 'static? static?})
+
+  (defndynamic annotate-do [l]
+    (let [body (map AST.annotate (cdr l))]
+      {'value l 'type 'do 'body body 'returns (last body)}))
+
+  (defndynamic annotate-while [l]
+    {'value l 'type 'while 'condition (AST.annotate (cadr l))
+     'body (AST.annotate (caddr l))})
+
+  (defndynamic annotate-if [l]
+    {'value l 'type 'if 'condition (AST.annotate (cadr l))
+     'then (AST.annotate (caddr l)) 'else (AST.annotate (cadddr l))})
+
+  (defndynamic annotate-quote [l]
+    {'value l 'type 'quote 'body (AST.annotate (cadr l))})
+
+  (defndynamic annotate-deftype [l]
+    {'value l 'type 'typedef 'name (cadr l) 'body (caddr l) 'external? false})
+
+  (defndynamic annotate-register [l]
+    (let [name (cadr l)
+          signature (caddr l)
+          external-name (if (= (length l) 4) (caddr l) (mangle name))]
+      {'value l 'type 'register 'name (cadr l) 'signature signature
+       'external-name external-name 'external? false}))
+
+  (defndynamic annotate-register-type [l]
+    (let [name (cadr l)
+          body (case (length l) 3 (caddr l) 4 (cadddr l) 'unknown)
+          external-name (if (= (length l) 4) (caddr l) (mangle name))]
+      {'value l 'type 'typedef 'name name 'body body
+       'external-name external-name 'external? false}))
+
+  (defndynamic annotate-defmodule [l]
+    {'value l 'type 'moduledef 'name (cadr l) 'body (map AST.annotate (cddr l))})
+
+  (defndynamic annotate-let-bindings [bindings]
+    (if (empty? bindings)
+      '()
+      (cons
+        {'type 'let-binding 'name (car bindings)
+         'binding (AST.annotate (cadr bindings))}
+        (AST.annotate-let-bindings (cddr bindings)))))
+
+  (defndynamic annotate-let [l]
+    {'value l 'type 'let 'bindings (AST.annotate-let-bindings (cadr l))
+     'body (AST.annotate (caddr l))})
+
+  (defdynamic BUILTINS {
+    'defdynamic (curry AST.annotate-def false)
+    'defndynamic (curry AST.annotate-defn false)
+    'def (curry AST.annotate-def true)
+    'defn (curry AST.annotate-defn true)
+    'do AST.annotate-do
+    'while AST.annotate-while
+    'if AST.annotate-if
+    'quote AST.annotate-quote
+    'deftype AST.annotate-deftype
+    'register AST.annotate-register
+    'register-type AST.annotate-register-type
+    'defmodule AST.annotate-defmodule
+    'let AST.annotate-let
+  })
+
+  (defndynamic annotate-list [l]
+    (cond
+      (empty? l) {'value l 'type 'unit}
+      (Map.contains? AST.BUILTINS (car l))
+        (let [f (Map.get AST.BUILTINS (car l))] (f l))
+      {'value l 'type 'application 'function (AST.annotate (car l))
+       'arguments (map AST.annotate (cdr l))}))
+
+  (defndynamic annotate [l]
+    (cond
+      (list? l) (AST.annotate-list l)
+      (array? l)
+        {'value (collect-into (map AST.annotate l) array) 'type 'array}
+      (number? l)
+        {'value l 'type 'number 'width (dynamic-type l)}
+      (string? l) {'value l 'type 'string}
+      (symbol? l) {'value l 'type 'symbol}
+      (macro-error "annotate got an unexpected value: " l)))
+)
