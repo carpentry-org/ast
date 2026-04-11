@@ -1,0 +1,43 @@
+(load "ast.carp")
+
+(Project.config "title" "ast")
+(Project.config "docs-directory" "./docs/")
+(Project.config "docs-logo" "")
+(Project.config "docs-url" "https://github.com/carpentry-org/ast")
+(Project.config "docs-styling" "../style.css")
+(Project.config "docs-prelude" "Structural annotations for Carp source forms.
+
+`AST.ann` walks a quoted source form and produces a dynamic map
+describing it — one variant per Carp special form, plus one per literal
+kind. `AST.unann` reverses the process, reconstructing the source from a
+(possibly rewritten) annotation map.
+
+### Usage
+
+```
+(AST.ann '(if true 1 2))
+; => {'value '(if true 1 2) 'type 'if
+;     'condition {'value true 'type 'boolean}
+;     'then {'value 1 'type 'number 'width 'int}
+;     'else {'value 2 'type 'number 'width 'int}}
+
+(AST.unann (AST.ann '(defn f [a] (+ a 1))))
+; => (defn f [a] (+ a 1))
+```
+
+### Rewriting source
+
+Because `unann` reads variant-specific child keys rather than the
+stashed `'value` slot, you can mutate an annotation before reversing it:
+
+```
+(let [a (AST.ann '(if true 1 99))]
+  (AST.unann
+    (Map.put
+      (Map.put a 'then (Map.get a 'else))
+      'else (Map.get a 'then))))
+; => (if true 99 1)
+```")
+
+(save-docs AST)
+(quit)

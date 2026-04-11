@@ -1,0 +1,130 @@
+<!DOCTYPE HTML>
+
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="content">
+            <div class="logo">
+                <a href="https://github.com/carpentry-org/ast">
+                    <img src="">
+                </a>
+                <div class="title">
+                    ast
+                </div>
+                <div class="index">
+                    <ul>
+                        <li>
+                            <a href="AST.html">
+                                AST
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="module">
+                <h1>
+                    AST
+                </h1>
+                <div class="module-description">
+                    <p>Structural annotations for Carp source forms.</p>
+<p><code>ann</code> walks a quoted source form and produces a dynamic map describing
+it — one variant per Carp special form, plus one per literal kind.
+<code>unann</code> reverses the process, reconstructing the source from a
+(possibly rewritten) annotation map. The pair lets you inspect, analyze,
+and rewrite Carp code as data without tripping over the irregular shapes
+of def/defn/let/match/register/etc.</p>
+
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#ann">
+                        <h3 id="ann">
+                            ann
+                        </h3>
+                    </a>
+                    <div class="description">
+                        dynamic
+                    </div>
+                    <p class="sig">
+                        Dynamic
+                    </p>
+                    <pre class="args">
+                        (ann l)
+                    </pre>
+                    <p class="doc">
+                        <p>annotates a Carp source form with structural metadata.</p>
+<p>Takes a quoted form <code>l</code> and returns a dynamic map. Every annotation has
+two common keys: <code>'value</code> holds the original form, and <code>'type</code> is a
+variant tag. Additional keys depend on the tag.</p>
+<p>Literals:</p>
+<ul>
+<li><code>'symbol</code>, <code>'string</code>, <code>'boolean</code>, <code>'character</code>: just <code>'value</code>.</li>
+<li><code>'number</code>: <code>'value</code> and <code>'width</code> (one of <code>'int</code> <code>'long</code> <code>'float</code>
+<code>'double</code> <code>'byte</code>).</li>
+<li><code>'unit</code>: the empty list <code>()</code>.</li>
+<li><code>'array</code>: <code>'value</code> is an array of recursively annotated elements.</li>
+</ul>
+<p>Special forms:</p>
+<ul>
+<li><code>'application</code>: <code>'function</code>, <code>'arguments</code>.</li>
+<li><code>'def</code>: <code>'name</code>, <code>'bound-to</code>, <code>'static?</code> (false for <code>defdynamic</code>).</li>
+<li><code>'defn</code>: <code>'name</code>, <code>'arguments</code> (raw), <code>'body</code>, <code>'static?</code>
+(false for <code>defndynamic</code>).</li>
+<li><code>'do</code>: <code>'body</code> (list), <code>'returns</code> (last element).</li>
+<li><code>'while</code>: <code>'condition</code>, <code>'body</code>.</li>
+<li><code>'if</code>: <code>'condition</code>, <code>'then</code>, <code>'else</code>.</li>
+<li><code>'quote</code>, <code>'ref</code>, <code>'deref</code>: <code>'body</code>.</li>
+<li><code>'deftype</code>: <code>'name</code>, <code>'body</code> (raw members).</li>
+<li><code>'register</code>: <code>'name</code>, <code>'signature</code> (raw), <code>'external-name</code> (string
+or <code>nil</code>).</li>
+<li><code>'register-type</code>: <code>'name</code>, <code>'body</code> (raw members or <code>'unknown</code>),
+<code>'external-name</code> (string or <code>nil</code>).</li>
+<li><code>'defmodule</code>: <code>'name</code>, <code>'body</code> (list).</li>
+<li><code>'let</code>: <code>'bindings</code> (list of <code>{'type 'let-binding 'name 'binding}</code>),
+<code>'body</code>.</li>
+<li><code>'fn</code>: <code>'arguments</code> (raw), <code>'body</code>.</li>
+<li><code>'break</code>: no extra fields.</li>
+<li><code>'set!</code>: <code>'target</code>, <code>'bound-to</code>.</li>
+<li><code>'the</code>: <code>'target-type</code> (raw), <code>'body</code>.</li>
+<li><code>'with</code>: <code>'module</code> (raw), <code>'body</code> (list).</li>
+<li><code>'match</code> / <code>'match-ref</code>: <code>'scrutinee</code>, <code>'cases</code> (list of
+<code>{'pattern 'body}</code>; patterns are raw).</li>
+</ul>
+<p>Unknown forms produce a <code>macro-error</code>.</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#unann">
+                        <h3 id="unann">
+                            unann
+                        </h3>
+                    </a>
+                    <div class="description">
+                        dynamic
+                    </div>
+                    <p class="sig">
+                        Dynamic
+                    </p>
+                    <pre class="args">
+                        (unann m)
+                    </pre>
+                    <p class="doc">
+                        <p>reconstructs a Carp source form from an annotation map
+produced by <code>ann</code>.</p>
+<p>Walks the map by <code>'type</code> tag and rebuilds the original form. The round-
+trip property holds: <code>(unann (ann x))</code> equals <code>x</code> for every supported
+form. Because the reconstruction reads the variant-specific child keys
+rather than the original <code>'value</code> slot, you can modify an annotation
+and <code>unann</code> will emit the rewritten form. Unknown type tags produce a
+<code>macro-error</code>.</p>
+
+                    </p>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
