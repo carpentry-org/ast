@@ -9,43 +9,65 @@ of def/defn/let/match/register/etc.")
 (defmodule AST
   (hidden ann-def)
   (defndynamic ann-def [static? l]
-    {'value l 'type 'def 'name (cadr l) 'bound-to (AST.ann (caddr l))
+    {'value l
+     'type 'def
+     'name (cadr l)
+     'bound-to (AST.ann (caddr l))
      'static? static?})
 
   (hidden ann-defn)
   (defndynamic ann-defn [static? l]
-    {'value l 'type 'defn 'name (cadr l) 'arguments (caddr l)
-     'body (AST.ann (cadddr l)) 'static? static?})
+    {'value l
+     'type 'defn
+     'name (cadr l)
+     'arguments (caddr l)
+     'body (AST.ann (cadddr l))
+     'static? static?})
 
   (hidden ann-do)
   (defndynamic ann-do [l]
     (let [body (map AST.ann (cdr l))]
-      {'value l 'type 'do 'body body 'returns (last body)}))
+      {'value l
+       'type 'do
+       'body body
+       'returns (last body)}))
 
   (hidden ann-while)
   (defndynamic ann-while [l]
-    {'value l 'type 'while 'condition (AST.ann (cadr l))
+    {'value l
+     'type 'while
+     'condition (AST.ann (cadr l))
      'body (AST.ann (caddr l))})
 
   (hidden ann-if)
   (defndynamic ann-if [l]
-    {'value l 'type 'if 'condition (AST.ann (cadr l))
-     'then (AST.ann (caddr l)) 'else (AST.ann (cadddr l))})
+    {'value l
+     'type 'if
+     'condition (AST.ann (cadr l))
+     'then (AST.ann (caddr l))
+     'else (AST.ann (cadddr l))})
 
   (hidden ann-quote)
-  (defndynamic ann-quote [l]
-    {'value l 'type 'quote 'body (AST.ann (cadr l))})
+  (defndynamic ann-quote [l] {'value l
+                              'type 'quote
+                              'body (AST.ann (cadr l))})
 
   (hidden ann-deftype)
   (defndynamic ann-deftype [l]
-    {'value l 'type 'deftype 'name (cadr l) 'body (caddr l)})
+    {'value l
+     'type 'deftype
+     'name (cadr l)
+     'body (caddr l)})
 
   (hidden ann-register)
   (defndynamic ann-register [l]
     (let [name (cadr l)
           signature (caddr l)
           external-name (if (= (length l) 4) (cadddr l) nil)]
-      {'value l 'type 'register 'name name 'signature signature
+      {'value l
+       'type 'register
+       'name name
+       'signature signature
        'external-name external-name}))
 
   (hidden ann-register-type)
@@ -54,66 +76,95 @@ of def/defn/let/match/register/etc.")
           len (length l)]
       (cond
         (= len 2)
-          {'value l 'type 'register-type 'name name
-           'body 'unknown 'external-name nil}
+          {'value l
+           'type 'register-type
+           'name name
+           'body 'unknown
+           'external-name nil}
         (= len 3)
           (if (string? (caddr l))
-            {'value l 'type 'register-type 'name name
-             'body 'unknown 'external-name (caddr l)}
-            {'value l 'type 'register-type 'name name
-             'body (caddr l) 'external-name nil})
+            {'value l
+             'type 'register-type
+             'name name
+             'body 'unknown
+             'external-name (caddr l)}
+            {'value l
+             'type 'register-type
+             'name name
+             'body (caddr l)
+             'external-name nil})
         (= len 4)
-          {'value l 'type 'register-type 'name name
-           'body (cadddr l) 'external-name (caddr l)}
+          {'value l
+           'type 'register-type
+           'name name
+           'body (cadddr l)
+           'external-name (caddr l)}
         (macro-error (list "ann-register-type: invalid form " l)))))
 
   (hidden ann-defmodule)
   (defndynamic ann-defmodule [l]
-    {'value l 'type 'defmodule 'name (cadr l) 'body (map AST.ann (cddr l))})
+    {'value l
+     'type 'defmodule
+     'name (cadr l)
+     'body (map AST.ann (cddr l))})
 
   (hidden ann-let-bindings)
   (defndynamic ann-let-bindings [bindings]
     (if (empty? bindings)
       '()
       (cons
-        {'type 'let-binding 'name (car bindings)
+        {'type 'let-binding
+         'name (car bindings)
          'binding (AST.ann (cadr bindings))}
         (AST.ann-let-bindings (cddr bindings)))))
 
   (hidden ann-let)
   (defndynamic ann-let [l]
-    {'value l 'type 'let 'bindings (AST.ann-let-bindings (cadr l))
+    {'value l
+     'type 'let
+     'bindings (AST.ann-let-bindings (cadr l))
      'body (AST.ann (caddr l))})
 
   (hidden ann-fn)
   (defndynamic ann-fn [l]
-    {'value l 'type 'fn 'arguments (cadr l) 'body (AST.ann (caddr l))})
+    {'value l
+     'type 'fn
+     'arguments (cadr l)
+     'body (AST.ann (caddr l))})
 
   (hidden ann-break)
-  (defndynamic ann-break [l]
-    {'value l 'type 'break})
+  (defndynamic ann-break [l] {'value l
+                              'type 'break})
 
   (hidden ann-set)
   (defndynamic ann-set [l]
-    {'value l 'type 'set! 'target (AST.ann (cadr l))
+    {'value l
+     'type 'set!
+     'target (AST.ann (cadr l))
      'bound-to (AST.ann (caddr l))})
 
   (hidden ann-the)
   (defndynamic ann-the [l]
-    {'value l 'type 'the 'target-type (cadr l)
+    {'value l
+     'type 'the
+     'target-type (cadr l)
      'body (AST.ann (caddr l))})
 
   (hidden ann-ref)
-  (defndynamic ann-ref [l]
-    {'value l 'type 'ref 'body (AST.ann (cadr l))})
+  (defndynamic ann-ref [l] {'value l
+                            'type 'ref
+                            'body (AST.ann (cadr l))})
 
   (hidden ann-deref)
-  (defndynamic ann-deref [l]
-    {'value l 'type 'deref 'body (AST.ann (cadr l))})
+  (defndynamic ann-deref [l] {'value l
+                              'type 'deref
+                              'body (AST.ann (cadr l))})
 
   (hidden ann-with)
   (defndynamic ann-with [l]
-    {'value l 'type 'with 'module (cadr l)
+    {'value l
+     'type 'with
+     'module (cadr l)
      'body (map AST.ann (cddr l))})
 
   (hidden ann-match-cases)
@@ -121,52 +172,59 @@ of def/defn/let/match/register/etc.")
     (if (empty? cases)
       '()
       (cons
-        {'pattern (car cases) 'body (AST.ann (cadr cases))}
+        {'pattern (car cases)
+         'body (AST.ann (cadr cases))}
         (AST.ann-match-cases (cddr cases)))))
 
   (hidden ann-match)
   (defndynamic ann-match [l]
-    {'value l 'type 'match 'scrutinee (AST.ann (cadr l))
+    {'value l
+     'type 'match
+     'scrutinee (AST.ann (cadr l))
      'cases (AST.ann-match-cases (cddr l))})
 
   (hidden ann-match-ref)
   (defndynamic ann-match-ref [l]
-    {'value l 'type 'match-ref 'scrutinee (AST.ann (cadr l))
+    {'value l
+     'type 'match-ref
+     'scrutinee (AST.ann (cadr l))
      'cases (AST.ann-match-cases (cddr l))})
 
   (hidden BUILTINS)
-  (defdynamic BUILTINS {
-    'defdynamic (curry AST.ann-def false)
-    'defndynamic (curry AST.ann-defn false)
-    'def (curry AST.ann-def true)
-    'defn (curry AST.ann-defn true)
-    'do AST.ann-do
-    'while AST.ann-while
-    'if AST.ann-if
-    'quote AST.ann-quote
-    'deftype AST.ann-deftype
-    'register AST.ann-register
-    'register-type AST.ann-register-type
-    'defmodule AST.ann-defmodule
-    'let AST.ann-let
-    'fn AST.ann-fn
-    'break AST.ann-break
-    'set! AST.ann-set
-    'the AST.ann-the
-    'ref AST.ann-ref
-    'deref AST.ann-deref
-    'with AST.ann-with
-    'match AST.ann-match
-    'match-ref AST.ann-match-ref
-  })
+  (defdynamic BUILTINS
+    {'defdynamic (curry AST.ann-def false)
+     'defndynamic (curry AST.ann-defn false)
+     'def (curry AST.ann-def true)
+     'defn (curry AST.ann-defn true)
+     'do AST.ann-do
+     'while AST.ann-while
+     'if AST.ann-if
+     'quote AST.ann-quote
+     'deftype AST.ann-deftype
+     'register AST.ann-register
+     'register-type AST.ann-register-type
+     'defmodule AST.ann-defmodule
+     'let AST.ann-let
+     'fn AST.ann-fn
+     'break AST.ann-break
+     'set! AST.ann-set
+     'the AST.ann-the
+     'ref AST.ann-ref
+     'deref AST.ann-deref
+     'with AST.ann-with
+     'match AST.ann-match
+     'match-ref AST.ann-match-ref})
 
   (hidden ann-list)
   (defndynamic ann-list [l]
     (cond
-      (empty? l) {'value l 'type 'unit}
+      (empty? l) {'value l
+                  'type 'unit}
       (Map.contains? AST.BUILTINS (car l))
         (let [f (Map.get AST.BUILTINS (car l))] (f l))
-      {'value l 'type 'application 'function (AST.ann (car l))
+      {'value l
+       'type 'application
+       'function (AST.ann (car l))
        'arguments (map AST.ann (cdr l))}))
 
   (doc ann "annotates a Carp source form with structural metadata.
@@ -211,15 +269,21 @@ Unknown forms produce a `macro-error`.")
   (defndynamic ann [l]
     (cond
       (list? l) (AST.ann-list l)
-      (array? l)
-        {'value (collect-into (map AST.ann l) array) 'type 'array}
-      (number? l)
-        {'value l 'type 'number 'width (dynamic-type l)}
-      (string? l) {'value l 'type 'string}
-      (symbol? l) {'value l 'type 'symbol}
-      (= (dynamic-type l) 'bool) {'value l 'type 'boolean}
-      (= (dynamic-type l) 'char) {'value l 'type 'character}
-      (macro-error (list "ann got an unexpected value: " l " of type " (dynamic-type l)))))
+      (array? l) {'value (collect-into (map AST.ann l) array)
+                  'type 'array}
+      (number? l) {'value l
+                   'type 'number
+                   'width (dynamic-type l)}
+      (string? l) {'value l
+                   'type 'string}
+      (symbol? l) {'value l
+                   'type 'symbol}
+      (= (dynamic-type l) 'bool) {'value l
+                                  'type 'boolean}
+      (= (dynamic-type l) 'char) {'value l
+                                  'type 'character}
+      (macro-error
+        (list "ann got an unexpected value: " l " of type " (dynamic-type l)))))
 
   (hidden unann-register)
   (defndynamic unann-register [m]
@@ -233,8 +297,8 @@ Unknown forms produce a `macro-error`.")
     (let [name (Map.get m 'name)
           body (Map.get m 'body)
           extname (Map.get m 'external-name)
-          has-body (not (= body 'unknown))
-          has-ext (not (= nil extname))]
+          has-body (/= body 'unknown)
+          has-ext (/= nil extname)]
       (cond
         (and has-ext has-body) (list 'register-type name extname body)
         has-body (list 'register-type name body)
@@ -246,9 +310,11 @@ Unknown forms produce a `macro-error`.")
     (if (empty? bindings)
       '()
       (let [b (car bindings)]
-        (cons (Map.get b 'name)
-              (cons (AST.unann (Map.get b 'binding))
-                    (AST.unann-let-bindings-list (cdr bindings)))))))
+        (cons
+          (Map.get b 'name)
+          (cons
+            (AST.unann (Map.get b 'binding))
+            (AST.unann-let-bindings-list (cdr bindings)))))))
 
   (hidden unann-let-bindings)
   (defndynamic unann-let-bindings [bindings]
@@ -259,9 +325,11 @@ Unknown forms produce a `macro-error`.")
     (if (empty? cases)
       '()
       (let [case-map (car cases)]
-        (cons (Map.get case-map 'pattern)
-              (cons (AST.unann (Map.get case-map 'body))
-                    (AST.unann-match-cases (cdr cases)))))))
+        (cons
+          (Map.get case-map 'pattern)
+          (cons
+            (AST.unann (Map.get case-map 'body))
+            (AST.unann-match-cases (cdr cases)))))))
 
   (doc unann "reconstructs a Carp source form from an annotation map
 produced by `ann`.
@@ -278,69 +346,72 @@ and `unann` will emit the rewritten form. Unknown type tags produce a
         (List.in? tag '(symbol string boolean character number))
           (Map.get m 'value)
         (= tag 'unit) '()
-        (= tag 'array)
-          (collect-into (map AST.unann (Map.get m 'value)) array)
+        (= tag 'array) (collect-into (map AST.unann (Map.get m 'value)) array)
         (= tag 'application)
-          (cons (AST.unann (Map.get m 'function))
-                (map AST.unann (Map.get m 'arguments)))
+          (cons
+            (AST.unann (Map.get m 'function))
+            (map AST.unann (Map.get m 'arguments)))
         (= tag 'def)
-          (list (if (Map.get m 'static?) 'def 'defdynamic)
-                (Map.get m 'name)
-                (AST.unann (Map.get m 'bound-to)))
+          (list
+            (if (Map.get m 'static?) 'def 'defdynamic)
+            (Map.get m 'name)
+            (AST.unann (Map.get m 'bound-to)))
         (= tag 'defn)
-          (list (if (Map.get m 'static?) 'defn 'defndynamic)
-                (Map.get m 'name)
-                (Map.get m 'arguments)
-                (AST.unann (Map.get m 'body)))
-        (= tag 'do)
-          (cons 'do (map AST.unann (Map.get m 'body)))
+          (list
+            (if (Map.get m 'static?) 'defn 'defndynamic)
+            (Map.get m 'name)
+            (Map.get m 'arguments)
+            (AST.unann (Map.get m 'body)))
+        (= tag 'do) (cons 'do (map AST.unann (Map.get m 'body)))
         (= tag 'while)
-          (list 'while
-                (AST.unann (Map.get m 'condition))
-                (AST.unann (Map.get m 'body)))
+          (list
+            'while
+            (AST.unann (Map.get m 'condition))
+            (AST.unann (Map.get m 'body)))
         (= tag 'if)
-          (list 'if
-                (AST.unann (Map.get m 'condition))
-                (AST.unann (Map.get m 'then))
-                (AST.unann (Map.get m 'else)))
+          (list
+            'if
+            (AST.unann (Map.get m 'condition))
+            (AST.unann (Map.get m 'then))
+            (AST.unann (Map.get m 'else)))
         (List.in? tag '(quote ref deref))
           (list tag (AST.unann (Map.get m 'body)))
-        (= tag 'deftype)
-          (list 'deftype (Map.get m 'name) (Map.get m 'body))
+        (= tag 'deftype) (list 'deftype (Map.get m 'name) (Map.get m 'body))
         (= tag 'register) (AST.unann-register m)
         (= tag 'register-type) (AST.unann-register-type m)
         (= tag 'defmodule)
-          (cons 'defmodule
-                (cons (Map.get m 'name)
-                      (map AST.unann (Map.get m 'body))))
+          (cons
+            'defmodule
+            (cons (Map.get m 'name) (map AST.unann (Map.get m 'body))))
         (= tag 'let)
-          (list 'let
-                (AST.unann-let-bindings (Map.get m 'bindings))
-                (AST.unann (Map.get m 'body)))
+          (list
+            'let
+            (AST.unann-let-bindings (Map.get m 'bindings))
+            (AST.unann (Map.get m 'body)))
         (= tag 'fn)
-          (list 'fn
-                (Map.get m 'arguments)
-                (AST.unann (Map.get m 'body)))
+          (list 'fn (Map.get m 'arguments) (AST.unann (Map.get m 'body)))
         (= tag 'break) '(break)
         (= tag 'set!)
-          (list 'set!
-                (AST.unann (Map.get m 'target))
-                (AST.unann (Map.get m 'bound-to)))
+          (list
+            'set!
+            (AST.unann (Map.get m 'target))
+            (AST.unann (Map.get m 'bound-to)))
         (= tag 'the)
-          (list 'the
-                (Map.get m 'target-type)
-                (AST.unann (Map.get m 'body)))
+          (list 'the (Map.get m 'target-type) (AST.unann (Map.get m 'body)))
         (= tag 'with)
-          (cons 'with
-                (cons (Map.get m 'module)
-                      (map AST.unann (Map.get m 'body))))
+          (cons
+            'with
+            (cons (Map.get m 'module) (map AST.unann (Map.get m 'body))))
         (= tag 'match)
-          (cons 'match
-                (cons (AST.unann (Map.get m 'scrutinee))
-                      (AST.unann-match-cases (Map.get m 'cases))))
+          (cons
+            'match
+            (cons
+              (AST.unann (Map.get m 'scrutinee))
+              (AST.unann-match-cases (Map.get m 'cases))))
         (= tag 'match-ref)
-          (cons 'match-ref
-                (cons (AST.unann (Map.get m 'scrutinee))
-                      (AST.unann-match-cases (Map.get m 'cases))))
-        (macro-error (list "unann: unknown type tag " tag)))))
-)
+          (cons
+            'match-ref
+            (cons
+              (AST.unann (Map.get m 'scrutinee))
+              (AST.unann-match-cases (Map.get m 'cases))))
+        (macro-error (list "unann: unknown type tag " tag))))))

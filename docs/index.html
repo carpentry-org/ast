@@ -1,0 +1,58 @@
+<!DOCTYPE HTML>
+
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="content">
+            <a href="https://github.com/carpentry-org/ast">
+                <div class="logo">
+                    <img src="" alt="Logo">
+                    <div class="index">
+                        <ul>
+                            <li>
+                                <a href="AST.html">
+                                    AST
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div>
+                    <h1>
+                        ast
+                    </h1>
+                    <p>Structural annotations for Carp source forms.</p>
+<p><code>AST.ann</code> walks a quoted source form and produces a dynamic map
+describing it — one variant per Carp special form, plus one per literal
+kind. <code>AST.unann</code> reverses the process, reconstructing the source from a
+(possibly rewritten) annotation map.</p>
+<h3>Usage</h3>
+<pre><code>(AST.ann '(if true 1 2))
+; =&gt; {'value '(if true 1 2) 'type 'if
+;     'condition {'value true 'type 'boolean}
+;     'then {'value 1 'type 'number 'width 'int}
+;     'else {'value 2 'type 'number 'width 'int}}
+
+(AST.unann (AST.ann '(defn f [a] (+ a 1))))
+; =&gt; (defn f [a] (+ a 1))
+</code></pre>
+<h3>Rewriting source</h3>
+<p>Because <code>unann</code> reads variant-specific child keys rather than the
+stashed <code>'value</code> slot, you can mutate an annotation before reversing it:</p>
+<pre><code>(let [a (AST.ann '(if true 1 99))]
+  (AST.unann
+    (Map.put
+      (Map.put a 'then (Map.get a 'else))
+      'else (Map.get a 'then))))
+; =&gt; (if true 99 1)
+</code></pre>
+
+                </div>
+            </a>
+        </div>
+    </body>
+</html>
