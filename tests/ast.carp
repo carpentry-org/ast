@@ -4,16 +4,14 @@
 
 (deftest test
   ; ---- literals ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value 'foo
      'type 'symbol}
     (AST.ann 'foo)
     "annotates symbol"
     Dynamic.Map.=)
 
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value 1
      'type 'number
      'width 'int}
@@ -21,8 +19,7 @@
     "annotates int literal"
     Dynamic.Map.=)
 
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value 1f
      'type 'number
      'width 'float}
@@ -30,8 +27,7 @@
     "annotates float literal"
     Dynamic.Map.=)
 
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value 1.0
      'type 'number
      'width 'double}
@@ -39,40 +35,35 @@
     "annotates double literal"
     Dynamic.Map.=)
 
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value "hi"
      'type 'string}
     (AST.ann '"hi")
     "annotates string literal"
     Dynamic.Map.=)
 
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value true
      'type 'boolean}
     (AST.ann 'true)
     "annotates boolean literal"
     Dynamic.Map.=)
 
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value \a
      'type 'character}
     (AST.ann '\a)
     "annotates character literal"
     Dynamic.Map.=)
 
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '()
      'type 'unit}
     (AST.ann '())
     "annotates empty list as unit"
     Dynamic.Map.=)
 
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value [
        {'value 1
         'type 'number
@@ -86,16 +77,14 @@
     Dynamic.Map.=)
 
   ; ---- application (non-builtin list) ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(a 1 2f)
      'type 'application
      'function {'value 'a
                 'type 'symbol}
-     'arguments (list
-       {'value 1
-        'type 'number
-        'width 'int}
+     'arguments (list {'value 1
+         'type 'number
+         'width 'int}
        {'value 2
         'type 'number
         'width 'float})}
@@ -104,8 +93,7 @@
     Dynamic.Map.=)
 
   ; ---- def / defdynamic ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(def a 1)
      'type 'def
      'name 'a
@@ -117,8 +105,7 @@
     "annotates def as static"
     Dynamic.Map.=)
 
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(defdynamic a 1)
      'type 'def
      'name 'a
@@ -131,8 +118,7 @@
     Dynamic.Map.=)
 
   ; ---- defn / defndynamic ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(defn f [a] a)
      'type 'defn
      'name 'f
@@ -144,8 +130,7 @@
     "annotates defn as static"
     Dynamic.Map.=)
 
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(defndynamic f [a] a)
      'type 'defn
      'name 'f
@@ -158,17 +143,15 @@
     Dynamic.Map.=)
 
   ; ---- do ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(do 1 2)
      'type 'do
-     'body (list
-       {'value 1
-        'type 'number
-        'width 'int}
-       {'value 2
-        'type 'number
-        'width 'int})
+     'body (list {'value 1
+                  'type 'number
+                  'width 'int}
+                 {'value 2
+                  'type 'number
+                  'width 'int})
      'returns {'value 2
                'type 'number
                'width 'int}}
@@ -177,8 +160,7 @@
     Dynamic.Map.=)
 
   ; ---- while ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(while true 1)
      'type 'while
      'condition {'value true
@@ -191,8 +173,7 @@
     Dynamic.Map.=)
 
   ; ---- if ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(if true 1 2)
      'type 'if
      'condition {'value true
@@ -208,8 +189,7 @@
     Dynamic.Map.=)
 
   ; ---- quote ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(quote foo)
      'type 'quote
      'body {'value 'foo
@@ -219,8 +199,7 @@
     Dynamic.Map.=)
 
   ; ---- deftype ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(deftype Foo [x Int])
      'type 'deftype
      'name 'Foo
@@ -230,8 +209,7 @@
     Dynamic.Map.=)
 
   ; ---- register ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(register foo (Fn [] Int))
      'type 'register
      'name 'foo
@@ -241,8 +219,7 @@
     "annotates register without override"
     Dynamic.Map.=)
 
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(register foo (Fn [] Int) "foo_c")
      'type 'register
      'name 'foo
@@ -253,8 +230,7 @@
     Dynamic.Map.=)
 
   ; ---- register-type ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(register-type Foo)
      'type 'register-type
      'name 'Foo
@@ -264,8 +240,7 @@
     "annotates bare register-type"
     Dynamic.Map.=)
 
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(register-type Foo [x Int])
      'type 'register-type
      'name 'Foo
@@ -275,8 +250,7 @@
     "annotates register-type with members"
     Dynamic.Map.=)
 
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(register-type Foo "Foo_c")
      'type 'register-type
      'name 'Foo
@@ -286,8 +260,7 @@
     "annotates register-type with only override"
     Dynamic.Map.=)
 
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(register-type Foo "Foo_c" [x Int])
      'type 'register-type
      'name 'Foo
@@ -298,34 +271,30 @@
     Dynamic.Map.=)
 
   ; ---- defmodule ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(defmodule Foo (def x 1))
      'type 'defmodule
      'name 'Foo
-     'body (list
-       {'value '(def x 1)
-        'type 'def
-        'name 'x
-        'bound-to {'value 1
-                   'type 'number
-                   'width 'int}
-        'static? true})}
+     'body (list {'value '(def x 1)
+                  'type 'def
+                  'name 'x
+                  'bound-to {'value 1
+                    'type 'number
+                    'width 'int}
+                  'static? true})}
     (AST.ann '(defmodule Foo (def x 1)))
     "annotates defmodule"
     Dynamic.Map.=)
 
   ; ---- let ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(let [a 1] a)
      'type 'let
-     'bindings (list
-       {'type 'let-binding
-        'name 'a
-        'binding {'value 1
-                  'type 'number
-                  'width 'int}})
+     'bindings (list {'type 'let-binding
+         'name 'a
+         'binding {'value 1
+                   'type 'number
+                   'width 'int}})
      'body {'value 'a
             'type 'symbol}}
     (AST.ann '(let [a 1] a))
@@ -333,8 +302,7 @@
     Dynamic.Map.=)
 
   ; ---- fn ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(fn [a] a)
      'type 'fn
      'arguments '[a]
@@ -345,8 +313,7 @@
     Dynamic.Map.=)
 
   ; ---- break ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(break)
      'type 'break}
     (AST.ann '(break))
@@ -354,8 +321,7 @@
     Dynamic.Map.=)
 
   ; ---- set! ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(set! x 1)
      'type 'set!
      'target {'value 'x
@@ -368,8 +334,7 @@
     Dynamic.Map.=)
 
   ; ---- the ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(the (Ref Int) x)
      'type 'the
      'target-type '(Ref Int)
@@ -380,8 +345,7 @@
     Dynamic.Map.=)
 
   ; ---- ref ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(ref x)
      'type 'ref
      'body {'value 'x
@@ -391,8 +355,7 @@
     Dynamic.Map.=)
 
   ; ---- deref ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(deref x)
      'type 'deref
      'body {'value 'x
@@ -402,8 +365,7 @@
     Dynamic.Map.=)
 
   ; ---- with ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(with Foo x)
      'type 'with
      'module 'Foo
@@ -414,48 +376,44 @@
     Dynamic.Map.=)
 
   ; ---- match ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(match x _ 1)
      'type 'match
      'scrutinee {'value 'x
                  'type 'symbol}
      'cases (list {'pattern '_
                    'body {'value 1
-                          'type 'number
-                          'width 'int}})}
+                     'type 'number
+                     'width 'int}})}
     (AST.ann '(match x _ 1))
     "annotates match with wildcard"
     Dynamic.Map.=)
 
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(match x 0 "zero" 1 "one")
      'type 'match
      'scrutinee {'value 'x
                  'type 'symbol}
-     'cases (list
-       {'pattern 0
-        'body {'value "zero"
-               'type 'string}}
-       {'pattern 1
-        'body {'value "one"
-               'type 'string}})}
+     'cases (list {'pattern 0
+                   'body {'value "zero"
+                     'type 'string}}
+                  {'pattern 1
+                   'body {'value "one"
+                     'type 'string}})}
     (AST.ann '(match x 0 "zero" 1 "one"))
     "annotates match with multiple cases"
     Dynamic.Map.=)
 
   ; ---- match-ref ----
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     {'value '(match-ref x _ 1)
      'type 'match-ref
      'scrutinee {'value 'x
                  'type 'symbol}
      'cases (list {'pattern '_
                    'body {'value 1
-                          'type 'number
-                          'width 'int}})}
+                     'type 'number
+                     'width 'int}})}
     (AST.ann '(match-ref x _ 1))
     "annotates match-ref"
     Dynamic.Map.=)
@@ -470,191 +428,162 @@
   (assert-dynamic-op test true (AST.unann (AST.ann 'true)) "roundtrip boolean" =)
   (assert-dynamic-op test \a (AST.unann (AST.ann '\a)) "roundtrip character" =)
   (assert-dynamic-op test '() (AST.unann (AST.ann '())) "roundtrip unit" =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '[1 2 3]
     (AST.unann (AST.ann '[1 2 3]))
     "roundtrip array"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(a 1 2)
     (AST.unann (AST.ann '(a 1 2)))
     "roundtrip application"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(def a 1)
     (AST.unann (AST.ann '(def a 1)))
     "roundtrip def"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(defdynamic a 1)
     (AST.unann (AST.ann '(defdynamic a 1)))
     "roundtrip defdynamic"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(defn f [a] a)
     (AST.unann (AST.ann '(defn f [a] a)))
     "roundtrip defn"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(defndynamic f [a] a)
     (AST.unann (AST.ann '(defndynamic f [a] a)))
     "roundtrip defndynamic"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(do 1 2 3)
     (AST.unann (AST.ann '(do 1 2 3)))
     "roundtrip do"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(while true 1)
     (AST.unann (AST.ann '(while true 1)))
     "roundtrip while"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(if true 1 2)
     (AST.unann (AST.ann '(if true 1 2)))
     "roundtrip if"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(quote foo)
     (AST.unann (AST.ann '(quote foo)))
     "roundtrip quote"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(deftype Foo [x Int])
     (AST.unann (AST.ann '(deftype Foo [x Int])))
     "roundtrip deftype"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(register foo (Fn [] Int))
     (AST.unann (AST.ann '(register foo (Fn [] Int))))
     "roundtrip register without override"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(register foo (Fn [] Int) "foo_c")
     (AST.unann (AST.ann '(register foo (Fn [] Int) "foo_c")))
     "roundtrip register with override"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(register-type Foo)
     (AST.unann (AST.ann '(register-type Foo)))
     "roundtrip bare register-type"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(register-type Foo [x Int])
     (AST.unann (AST.ann '(register-type Foo [x Int])))
     "roundtrip register-type with members"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(register-type Foo "Foo_c")
     (AST.unann (AST.ann '(register-type Foo "Foo_c")))
     "roundtrip register-type with only override"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(register-type Foo "Foo_c" [x Int])
     (AST.unann (AST.ann '(register-type Foo "Foo_c" [x Int])))
     "roundtrip register-type with override and members"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(defmodule Foo (def x 1))
     (AST.unann (AST.ann '(defmodule Foo (def x 1))))
     "roundtrip defmodule"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(let [a 1
            b 2] a)
     (AST.unann (AST.ann '(let [a 1
-                               b 2] a)))
+                     b 2] a)))
     "roundtrip let"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(fn [a] a)
     (AST.unann (AST.ann '(fn [a] a)))
     "roundtrip fn"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(break)
     (AST.unann (AST.ann '(break)))
     "roundtrip break"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(set! x 1)
     (AST.unann (AST.ann '(set! x 1)))
     "roundtrip set!"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(the (Ref Int) x)
     (AST.unann (AST.ann '(the (Ref Int) x)))
     "roundtrip the"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(ref x)
     (AST.unann (AST.ann '(ref x)))
     "roundtrip ref"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(deref x)
     (AST.unann (AST.ann '(deref x)))
     "roundtrip deref"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(with Foo x)
     (AST.unann (AST.ann '(with Foo x)))
     "roundtrip with"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(match x 0 "zero" 1 "one")
     (AST.unann (AST.ann '(match x 0 "zero" 1 "one")))
     "roundtrip match"
     =)
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(match-ref x _ 1)
     (AST.unann (AST.ann '(match-ref x _ 1)))
     "roundtrip match-ref"
     =)
 
   ; nested: real-world shape mixing several forms
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(defn f [a b] (let [c (+ a b)] (if (> c 0) c 0)))
     (AST.unann (AST.ann '(defn f [a b] (let [c (+ a b)] (if (> c 0) c 0)))))
     "roundtrip deeply nested form"
     =)
 
   ; rewrite: swap the then/else branches of an if via the annotation
-  (assert-dynamic-op
-    test
+  (assert-dynamic-op test
     '(if true 99 1)
-    (AST.unann
-      (let [a (AST.ann '(if true 1 99))]
-        (Map.put (Map.put a 'then (Map.get a 'else)) 'else (Map.get a 'then))))
+    (AST.unann (let [a (AST.ann '(if true 1 99))]
+                 (Map.put (Map.put a 'then (Map.get a 'else))
+                   'else
+                   (Map.get a 'then))))
     "rewrite if by swapping then/else via the annotation"
     =))
