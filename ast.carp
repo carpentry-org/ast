@@ -49,8 +49,8 @@ of def/defn/let/match/register/etc.")
 
   (hidden ann-quote)
   (defndynamic ann-quote [l] {'value l
-      'type 'quote
-      'body (AST.ann (cadr l))})
+                              'type 'quote
+                              'body (AST.ann (cadr l))})
 
   (hidden ann-deftype)
   (defndynamic ann-deftype [l]
@@ -112,10 +112,11 @@ of def/defn/let/match/register/etc.")
   (defndynamic ann-let-bindings [bindings]
     (if (empty? bindings)
       '()
-      (cons {'type 'let-binding
-             'name (car bindings)
-             'binding (AST.ann (cadr bindings))}
-            (AST.ann-let-bindings (cddr bindings)))))
+      (cons
+        {'type 'let-binding
+         'name (car bindings)
+         'binding (AST.ann (cadr bindings))}
+        (AST.ann-let-bindings (cddr bindings)))))
 
   (hidden ann-let)
   (defndynamic ann-let [l]
@@ -133,7 +134,7 @@ of def/defn/let/match/register/etc.")
 
   (hidden ann-break)
   (defndynamic ann-break [l] {'value l
-      'type 'break})
+                              'type 'break})
 
   (hidden ann-set)
   (defndynamic ann-set [l]
@@ -151,13 +152,13 @@ of def/defn/let/match/register/etc.")
 
   (hidden ann-ref)
   (defndynamic ann-ref [l] {'value l
-      'type 'ref
-      'body (AST.ann (cadr l))})
+                            'type 'ref
+                            'body (AST.ann (cadr l))})
 
   (hidden ann-deref)
   (defndynamic ann-deref [l] {'value l
-      'type 'deref
-      'body (AST.ann (cadr l))})
+                              'type 'deref
+                              'body (AST.ann (cadr l))})
 
   (hidden ann-with)
   (defndynamic ann-with [l]
@@ -170,9 +171,10 @@ of def/defn/let/match/register/etc.")
   (defndynamic ann-match-cases [cases]
     (if (empty? cases)
       '()
-      (cons {'pattern (car cases)
-             'body (AST.ann (cadr cases))}
-            (AST.ann-match-cases (cddr cases)))))
+      (cons
+        {'pattern (car cases)
+         'body (AST.ann (cadr cases))}
+        (AST.ann-match-cases (cddr cases)))))
 
   (hidden ann-match)
   (defndynamic ann-match [l]
@@ -277,13 +279,11 @@ Unknown forms produce a `macro-error`.")
       (symbol? l) {'value l
                    'type 'symbol}
       (= (dynamic-type l) 'bool) {'value l
-          'type 'boolean}
+                                  'type 'boolean}
       (= (dynamic-type l) 'char) {'value l
-          'type 'character}
-      (macro-error (list "ann got an unexpected value: "
-                     l
-                     " of type "
-                     (dynamic-type l)))))
+                                  'type 'character}
+      (macro-error
+        (list "ann got an unexpected value: " l " of type " (dynamic-type l)))))
 
   (hidden unann-register)
   (defndynamic unann-register [m]
@@ -347,14 +347,16 @@ and `unann` will emit the rewritten form. Unknown type tags produce a
           (cons (AST.unann (Map.get m 'function))
                 (map AST.unann (Map.get m 'arguments)))
         (= tag 'def)
-          (list (if (Map.get m 'static?) 'def 'defdynamic)
-                (Map.get m 'name)
-                (AST.unann (Map.get m 'bound-to)))
+          (list
+            (if (Map.get m 'static?) 'def 'defdynamic)
+            (Map.get m 'name)
+            (AST.unann (Map.get m 'bound-to)))
         (= tag 'defn)
-          (list (if (Map.get m 'static?) 'defn 'defndynamic)
-                (Map.get m 'name)
-                (Map.get m 'arguments)
-                (AST.unann (Map.get m 'body)))
+          (list
+            (if (Map.get m 'static?) 'defn 'defndynamic)
+            (Map.get m 'name)
+            (Map.get m 'arguments)
+            (AST.unann (Map.get m 'body)))
         (= tag 'do) (cons 'do (map AST.unann (Map.get m 'body)))
         (= tag 'while)
           (list 'while
@@ -392,9 +394,9 @@ and `unann` will emit the rewritten form. Unknown type tags produce a
         (= tag 'match)
           (cons 'match
                 (cons (AST.unann (Map.get m 'scrutinee))
-                  (AST.unann-match-cases (Map.get m 'cases))))
+                      (AST.unann-match-cases (Map.get m 'cases))))
         (= tag 'match-ref)
           (cons 'match-ref
                 (cons (AST.unann (Map.get m 'scrutinee))
-                  (AST.unann-match-cases (Map.get m 'cases))))
+                      (AST.unann-match-cases (Map.get m 'cases))))
         (macro-error (list "unann: unknown type tag " tag))))))
