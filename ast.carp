@@ -330,12 +330,11 @@ Unknown forms produce a `macro-error`.")
   (doc unann "reconstructs a Carp source form from an annotation map
 produced by `ann`.
 
-Walks the map by `'type` tag and rebuilds the original form. The round-
-trip property holds: `(unann (ann x))` equals `x` for every supported
-form. Because the reconstruction reads the variant-specific child keys
-rather than the original `'value` slot, you can modify an annotation
-and `unann` will emit the rewritten form. Unknown type tags produce a
-`macro-error`.")
+The round-trip property holds: `(unann (ann x))` equals `x` for every
+supported form. Because the reconstruction reads the variant-specific
+child keys rather than the original `'value` slot, you can modify an
+annotation and `unann` will emit the rewritten form. Unknown type tags
+produce a `macro-error`.")
   (defndynamic unann [m]
     (let [tag (Map.get m 'type)]
       (cond

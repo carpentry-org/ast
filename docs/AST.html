@@ -115,12 +115,11 @@ or <code>nil</code>).</li>
                     <p class="doc">
                         <p>reconstructs a Carp source form from an annotation map
 produced by <code>ann</code>.</p>
-<p>Walks the map by <code>'type</code> tag and rebuilds the original form. The round-
-trip property holds: <code>(unann (ann x))</code> equals <code>x</code> for every supported
-form. Because the reconstruction reads the variant-specific child keys
-rather than the original <code>'value</code> slot, you can modify an annotation
-and <code>unann</code> will emit the rewritten form. Unknown type tags produce a
-<code>macro-error</code>.</p>
+<p>The round-trip property holds: <code>(unann (ann x))</code> equals <code>x</code> for every
+supported form. Because the reconstruction reads the variant-specific
+child keys rather than the original <code>'value</code> slot, you can modify an
+annotation and <code>unann</code> will emit the rewritten form. Unknown type tags
+produce a <code>macro-error</code>.</p>
 
                     </p>
                 </div>

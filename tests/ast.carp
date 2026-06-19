@@ -3,7 +3,6 @@
 (use Test)
 
 (deftest test
-  ; ---- literals ----
   (assert-dynamic-op test
                      {'value 'foo
                       'type 'symbol}
@@ -75,7 +74,6 @@
                      "annotates array literal"
                      Dynamic.Map.=)
 
-  ; ---- application (non-builtin list) ----
   (assert-dynamic-op test
                      {'value '(a 1 2f)
                       'type 'application
@@ -91,7 +89,6 @@
                      "annotates function application"
                      Dynamic.Map.=)
 
-  ; ---- def / defdynamic ----
   (assert-dynamic-op test
                      {'value '(def a 1)
                       'type 'def
@@ -116,7 +113,6 @@
                      "annotates defdynamic as non-static"
                      Dynamic.Map.=)
 
-  ; ---- defn / defndynamic ----
   (assert-dynamic-op test
                      {'value '(defn f [a] a)
                       'type 'defn
@@ -141,7 +137,6 @@
                      "annotates defndynamic as non-static"
                      Dynamic.Map.=)
 
-  ; ---- do ----
   (assert-dynamic-op test
                      {'value '(do 1 2)
                       'type 'do
@@ -158,7 +153,6 @@
                      "annotates do with last expression as returns"
                      Dynamic.Map.=)
 
-  ; ---- while ----
   (assert-dynamic-op test
                      {'value '(while true 1)
                       'type 'while
@@ -171,7 +165,6 @@
                      "annotates while"
                      Dynamic.Map.=)
 
-  ; ---- if ----
   (assert-dynamic-op test
                      {'value '(if true 1 2)
                       'type 'if
@@ -187,7 +180,6 @@
                      "annotates if with three arms"
                      Dynamic.Map.=)
 
-  ; ---- quote ----
   (assert-dynamic-op test
                      {'value '(quote foo)
                       'type 'quote
@@ -197,7 +189,6 @@
                      "annotates quote"
                      Dynamic.Map.=)
 
-  ; ---- deftype ----
   (assert-dynamic-op test
                      {'value '(deftype Foo [x Int])
                       'type 'deftype
@@ -207,7 +198,6 @@
                      "annotates deftype"
                      Dynamic.Map.=)
 
-  ; ---- register ----
   (assert-dynamic-op test
                      {'value '(register foo (Fn [] Int))
                       'type 'register
@@ -228,7 +218,6 @@
                      "annotates register with override"
                      Dynamic.Map.=)
 
-  ; ---- register-type ----
   (assert-dynamic-op test
                      {'value '(register-type Foo)
                       'type 'register-type
@@ -269,7 +258,6 @@
                      "annotates register-type with override and members"
                      Dynamic.Map.=)
 
-  ; ---- defmodule ----
   (assert-dynamic-op test
                      {'value '(defmodule Foo (def x 1))
                       'type 'defmodule
@@ -286,7 +274,6 @@
                      "annotates defmodule"
                      Dynamic.Map.=)
 
-  ; ---- let ----
   (assert-dynamic-op test
                      {'value '(let [a 1] a)
                       'type 'let
@@ -302,7 +289,6 @@
                      "annotates let"
                      Dynamic.Map.=)
 
-  ; ---- fn ----
   (assert-dynamic-op test
                      {'value '(fn [a] a)
                       'type 'fn
@@ -313,7 +299,6 @@
                      "annotates fn"
                      Dynamic.Map.=)
 
-  ; ---- break ----
   (assert-dynamic-op test
                      {'value '(break)
                       'type 'break}
@@ -321,7 +306,6 @@
                      "annotates break"
                      Dynamic.Map.=)
 
-  ; ---- set! ----
   (assert-dynamic-op test
                      {'value '(set! x 1)
                       'type 'set!
@@ -334,7 +318,6 @@
                      "annotates set!"
                      Dynamic.Map.=)
 
-  ; ---- the ----
   (assert-dynamic-op test
                      {'value '(the (Ref Int) x)
                       'type 'the
@@ -345,7 +328,6 @@
                      "annotates the with compound type"
                      Dynamic.Map.=)
 
-  ; ---- ref ----
   (assert-dynamic-op test
                      {'value '(ref x)
                       'type 'ref
@@ -355,7 +337,6 @@
                      "annotates ref"
                      Dynamic.Map.=)
 
-  ; ---- deref ----
   (assert-dynamic-op test
                      {'value '(deref x)
                       'type 'deref
@@ -365,7 +346,6 @@
                      "annotates deref"
                      Dynamic.Map.=)
 
-  ; ---- with ----
   (assert-dynamic-op test
                      {'value '(with Foo x)
                       'type 'with
@@ -376,7 +356,6 @@
                      "annotates with"
                      Dynamic.Map.=)
 
-  ; ---- match ----
   (assert-dynamic-op test
                      {'value '(match x _ 1)
                       'type 'match
@@ -407,7 +386,6 @@
                      "annotates match with multiple cases"
                      Dynamic.Map.=)
 
-  ; ---- match-ref ----
   (assert-dynamic-op test
                      {'value '(match-ref x _ 1)
                       'type 'match-ref
@@ -422,7 +400,6 @@
                      "annotates match-ref"
                      Dynamic.Map.=)
 
-  ; ---- unann round-trips ----
   ; property: (unann (ann x)) = x for every supported form
   (assert-dynamic-op test 'foo (AST.unann (AST.ann 'foo)) "roundtrip symbol" =)
   (assert-dynamic-op test 1 (AST.unann (AST.ann '1)) "roundtrip int" =)
@@ -575,7 +552,6 @@
                      "roundtrip match-ref"
                      =)
 
-  ; nested: real-world shape mixing several forms
   (assert-dynamic-op test
                      '(defn f [a b] (let [c (+ a b)] (if (> c 0) c 0)))
                      (AST.unann
@@ -584,7 +560,6 @@
                      "roundtrip deeply nested form"
                      =)
 
-  ; rewrite: swap the then/else branches of an if via the annotation
   (assert-dynamic-op test
                      '(if true 99 1)
                      (AST.unann
