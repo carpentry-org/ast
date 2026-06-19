@@ -275,7 +275,7 @@
                      Dynamic.Map.=)
 
   (assert-dynamic-op test
-                     {'value '(let [a 1] a)
+                     {'value '(let [a 1] b)
                       'type 'let
                       'bindings (list
                         {'type 'let-binding
@@ -283,9 +283,9 @@
                          'binding {'value 1
                                    'type 'number
                                    'width 'int}})
-                      'body {'value 'a
+                      'body {'value 'b
                              'type 'symbol}}
-                     (AST.ann '(let [a 1] a))
+                     (AST.ann '(let [a 1] b))
                      "annotates let"
                      Dynamic.Map.=)
 
