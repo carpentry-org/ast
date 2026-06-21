@@ -552,6 +552,206 @@
                      "roundtrip match-ref"
                      =)
 
+  ; new builtins: cond
+  (assert-dynamic-op test
+                     {'value '(cond true 1 2)
+                      'type 'cond
+                      'cases (list
+                        {'condition {'value true
+                                     'type 'boolean}
+                         'body {'value 1
+                                'type 'number
+                                'width 'int}})
+                      'else {'value 2
+                             'type 'number
+                             'width 'int}}
+                     (AST.ann '(cond true 1 2))
+                     "annotates cond"
+                     Dynamic.Map.=)
+
+  ; new builtins: case
+  (assert-dynamic-op test
+                     {'value '(case x 0 "zero" "default")
+                      'type 'case
+                      'scrutinee {'value 'x
+                                  'type 'symbol}
+                      'cases (list
+                        {'pattern 0
+                         'body {'value "zero"
+                                'type 'string}})
+                      'else {'value "default"
+                             'type 'string}}
+                     (AST.ann '(case x 0 "zero" "default"))
+                     "annotates case"
+                     Dynamic.Map.=)
+
+  ; new builtins: for
+  (assert-dynamic-op test
+                     {'value '(for [i 0 10] i)
+                      'type 'for
+                      'variable 'i
+                      'from {'value 0
+                             'type 'number
+                             'width 'int}
+                      'to {'value 10
+                           'type 'number
+                           'width 'int}
+                      'body {'value 'i
+                             'type 'symbol}}
+                     (AST.ann '(for [i 0 10] i))
+                     "annotates for"
+                     Dynamic.Map.=)
+
+  ; new builtins: address
+  (assert-dynamic-op test
+                     {'value '(address x)
+                      'type 'address
+                      'body {'value 'x
+                             'type 'symbol}}
+                     (AST.ann '(address x))
+                     "annotates address"
+                     Dynamic.Map.=)
+
+  ; new builtins: defmacro
+  (assert-dynamic-op test
+                     {'value '(defmacro foo [x] x)
+                      'type 'defmacro
+                      'name 'foo
+                      'arguments '[x]
+                      'body {'value 'x
+                             'type 'symbol}}
+                     (AST.ann '(defmacro foo [x] x))
+                     "annotates defmacro"
+                     Dynamic.Map.=)
+
+  ; new builtins: definterface
+  (assert-dynamic-op test
+                     {'value '(definterface zero (Fn [] a))
+                      'type 'definterface
+                      'name 'zero
+                      'signature '(Fn [] a)}
+                     (AST.ann '(definterface zero (Fn [] a)))
+                     "annotates definterface"
+                     Dynamic.Map.=)
+
+  ; new builtins: use
+  (assert-dynamic-op test
+                     {'value '(use Array)
+                      'type 'use
+                      'module 'Array}
+                     (AST.ann '(use Array))
+                     "annotates use"
+                     Dynamic.Map.=)
+
+  ; new builtins: load
+  (assert-dynamic-op test
+                     {'value '(load "core.carp")
+                      'type 'load
+                      'path "core.carp"}
+                     (AST.ann '(load "core.carp"))
+                     "annotates load"
+                     Dynamic.Map.=)
+
+  ; new builtins: doc
+  (assert-dynamic-op test
+                     {'value '(doc foo "does a thing")
+                      'type 'doc
+                      'name 'foo
+                      'docstring "does a thing"}
+                     (AST.ann '(doc foo "does a thing"))
+                     "annotates doc"
+                     Dynamic.Map.=)
+
+  ; new builtins: hidden
+  (assert-dynamic-op test
+                     {'value '(hidden foo)
+                      'type 'hidden
+                      'name 'foo}
+                     (AST.ann '(hidden foo))
+                     "annotates hidden"
+                     Dynamic.Map.=)
+
+  ; new builtins: private
+  (assert-dynamic-op test
+                     {'value '(private foo)
+                      'type 'private
+                      'name 'foo}
+                     (AST.ann '(private foo))
+                     "annotates private"
+                     Dynamic.Map.=)
+
+  ; new builtins: implements
+  (assert-dynamic-op test
+                     {'value '(implements zero Int.zero)
+                      'type 'implements
+                      'interface 'zero
+                      'function 'Int.zero}
+                     (AST.ann '(implements zero Int.zero))
+                     "annotates implements"
+                     Dynamic.Map.=)
+
+  ; roundtrips for new builtins
+  (assert-dynamic-op test
+                     '(cond true 1 2)
+                     (AST.unann (AST.ann '(cond true 1 2)))
+                     "roundtrip cond"
+                     =)
+  (assert-dynamic-op test
+                     '(case x 0 "zero" "default")
+                     (AST.unann (AST.ann '(case x 0 "zero" "default")))
+                     "roundtrip case"
+                     =)
+  (assert-dynamic-op test
+                     '(for [i 0 10] i)
+                     (AST.unann (AST.ann '(for [i 0 10] i)))
+                     "roundtrip for"
+                     =)
+  (assert-dynamic-op test
+                     '(address x)
+                     (AST.unann (AST.ann '(address x)))
+                     "roundtrip address"
+                     =)
+  (assert-dynamic-op test
+                     '(defmacro foo [x] x)
+                     (AST.unann (AST.ann '(defmacro foo [x] x)))
+                     "roundtrip defmacro"
+                     =)
+  (assert-dynamic-op test
+                     '(definterface zero (Fn [] a))
+                     (AST.unann (AST.ann '(definterface zero (Fn [] a))))
+                     "roundtrip definterface"
+                     =)
+  (assert-dynamic-op test
+                     '(use Array)
+                     (AST.unann (AST.ann '(use Array)))
+                     "roundtrip use"
+                     =)
+  (assert-dynamic-op test
+                     '(load "core.carp")
+                     (AST.unann (AST.ann '(load "core.carp")))
+                     "roundtrip load"
+                     =)
+  (assert-dynamic-op test
+                     '(doc foo "does a thing")
+                     (AST.unann (AST.ann '(doc foo "does a thing")))
+                     "roundtrip doc"
+                     =)
+  (assert-dynamic-op test
+                     '(hidden foo)
+                     (AST.unann (AST.ann '(hidden foo)))
+                     "roundtrip hidden"
+                     =)
+  (assert-dynamic-op test
+                     '(private foo)
+                     (AST.unann (AST.ann '(private foo)))
+                     "roundtrip private"
+                     =)
+  (assert-dynamic-op test
+                     '(implements zero Int.zero)
+                     (AST.unann (AST.ann '(implements zero Int.zero)))
+                     "roundtrip implements"
+                     =)
+
   (assert-dynamic-op test
                      '(defn f [a b] (let [c (+ a b)] (if (> c 0) c 0)))
                      (AST.unann

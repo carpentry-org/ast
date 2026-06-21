@@ -190,6 +190,113 @@ of def/defn/let/match/register/etc.")
      'scrutinee (AST.ann (cadr l))
      'cases (AST.ann-match-cases (cddr l))})
 
+  (hidden ann-cond-pairs)
+  (defndynamic ann-cond-pairs [args]
+    (if (< (length args) 2)
+      '()
+      (cons
+        {'condition (AST.ann (car args))
+         'body (AST.ann (cadr args))}
+        (AST.ann-cond-pairs (cddr args)))))
+
+  (hidden ann-cond-else)
+  (defndynamic ann-cond-else [args]
+    (cond
+      (empty? args) nil
+      (empty? (cdr args)) (AST.ann (car args))
+      (AST.ann-cond-else (cddr args))))
+
+  (hidden ann-cond)
+  (defndynamic ann-cond [l]
+    (let [args (cdr l)]
+      {'value l
+       'type 'cond
+       'cases (AST.ann-cond-pairs args)
+       'else (AST.ann-cond-else args)}))
+
+  (hidden ann-case-pairs)
+  (defndynamic ann-case-pairs [args]
+    (if (< (length args) 2)
+      '()
+      (cons
+        {'pattern (car args)
+         'body (AST.ann (cadr args))}
+        (AST.ann-case-pairs (cddr args)))))
+
+  (hidden ann-case)
+  (defndynamic ann-case [l]
+    (let [args (cddr l)]
+      {'value l
+       'type 'case
+       'scrutinee (AST.ann (cadr l))
+       'cases (AST.ann-case-pairs args)
+       'else (AST.ann-cond-else args)}))
+
+  (hidden ann-for)
+  (defndynamic ann-for [l]
+    (let [binding (cadr l)]
+      {'value l
+       'type 'for
+       'variable (car binding)
+       'from (AST.ann (cadr binding))
+       'to (AST.ann (caddr binding))
+       'body (AST.ann (caddr l))}))
+
+  (hidden ann-address)
+  (defndynamic ann-address [l]
+    {'value l
+     'type 'address
+     'body (AST.ann (cadr l))})
+
+  (hidden ann-defmacro)
+  (defndynamic ann-defmacro [l]
+    {'value l
+     'type 'defmacro
+     'name (cadr l)
+     'arguments (caddr l)
+     'body (AST.ann (cadddr l))})
+
+  (hidden ann-definterface)
+  (defndynamic ann-definterface [l]
+    {'value l
+     'type 'definterface
+     'name (cadr l)
+     'signature (caddr l)})
+
+  (hidden ann-use)
+  (defndynamic ann-use [l] {'value l
+                            'type 'use
+                            'module (cadr l)})
+
+  (hidden ann-load)
+  (defndynamic ann-load [l] {'value l
+                             'type 'load
+                             'path (cadr l)})
+
+  (hidden ann-doc)
+  (defndynamic ann-doc [l]
+    {'value l
+     'type 'doc
+     'name (cadr l)
+     'docstring (caddr l)})
+
+  (hidden ann-hidden)
+  (defndynamic ann-hidden [l] {'value l
+                               'type 'hidden
+                               'name (cadr l)})
+
+  (hidden ann-private)
+  (defndynamic ann-private [l] {'value l
+                                'type 'private
+                                'name (cadr l)})
+
+  (hidden ann-implements)
+  (defndynamic ann-implements [l]
+    {'value l
+     'type 'implements
+     'interface (cadr l)
+     'function (caddr l)})
+
   (hidden BUILTINS)
   (defdynamic BUILTINS
     {'defdynamic (curry AST.ann-def false)
@@ -213,7 +320,19 @@ of def/defn/let/match/register/etc.")
      'deref AST.ann-deref
      'with AST.ann-with
      'match AST.ann-match
-     'match-ref AST.ann-match-ref})
+     'match-ref AST.ann-match-ref
+     'cond AST.ann-cond
+     'case AST.ann-case
+     'for AST.ann-for
+     'address AST.ann-address
+     'defmacro AST.ann-defmacro
+     'definterface AST.ann-definterface
+     'use AST.ann-use
+     'load AST.ann-load
+     'doc AST.ann-doc
+     'hidden AST.ann-hidden
+     'private AST.ann-private
+     'implements AST.ann-implements})
 
   (hidden ann-list)
   (defndynamic ann-list [l]
@@ -264,6 +383,18 @@ Special forms:
 - `'with`: `'module` (raw), `'body` (list).
 - `'match` / `'match-ref`: `'scrutinee`, `'cases` (list of
   `{'pattern 'body}`; patterns are raw).
+- `'cond`: `'cases` (list of `{'condition 'body}`), `'else` (or `nil`).
+- `'case`: `'scrutinee`, `'cases` (list of `{'pattern 'body}`; patterns
+  are raw), `'else` (or `nil`).
+- `'for`: `'variable` (raw), `'from`, `'to`, `'body`.
+- `'address`: `'body`.
+- `'defmacro`: `'name`, `'arguments` (raw), `'body`.
+- `'definterface`: `'name`, `'signature` (raw).
+- `'use`: `'module` (raw).
+- `'load`: `'path` (raw).
+- `'doc`: `'name`, `'docstring`.
+- `'hidden` / `'private`: `'name`.
+- `'implements`: `'interface`, `'function`.
 
 Unknown forms produce a `macro-error`.")
   (defndynamic ann [l]
@@ -327,6 +458,25 @@ Unknown forms produce a `macro-error`.")
               (cons (AST.unann (Map.get case-map 'body))
                     (AST.unann-match-cases (cdr cases)))))))
 
+  (hidden unann-cond-cases)
+  (defndynamic unann-cond-cases [cases else-ann]
+    (if (empty? cases)
+      (if (= nil else-ann) '() (list else-ann))
+      (let [case-map (car cases)]
+        (cons
+          (AST.unann (Map.get case-map 'condition))
+          (cons (AST.unann (Map.get case-map 'body))
+                (AST.unann-cond-cases (cdr cases) else-ann))))))
+
+  (hidden unann-case-cases)
+  (defndynamic unann-case-cases [cases else-ann]
+    (if (empty? cases)
+      (if (= nil else-ann) '() (list else-ann))
+      (let [case-map (car cases)]
+        (cons (Map.get case-map 'pattern)
+              (cons (AST.unann (Map.get case-map 'body))
+                    (AST.unann-case-cases (cdr cases) else-ann))))))
+
   (doc unann "reconstructs a Carp source form from an annotation map
 produced by `ann`.
 
@@ -366,7 +516,7 @@ produce a `macro-error`.")
                 (AST.unann (Map.get m 'condition))
                 (AST.unann (Map.get m 'then))
                 (AST.unann (Map.get m 'else)))
-        (List.in? tag '(quote ref deref))
+        (List.in? tag '(quote ref deref address))
           (list tag (AST.unann (Map.get m 'body)))
         (= tag 'deftype) (list 'deftype (Map.get m 'name) (Map.get m 'body))
         (= tag 'register) (AST.unann-register m)
@@ -398,4 +548,40 @@ produce a `macro-error`.")
           (cons 'match-ref
                 (cons (AST.unann (Map.get m 'scrutinee))
                       (AST.unann-match-cases (Map.get m 'cases))))
+        (= tag 'cond)
+          (let [else-val (Map.get m 'else)]
+            (cons 'cond
+                  (AST.unann-cond-cases (Map.get m 'cases)
+                                        (if (= nil else-val)
+                                          nil
+                                          (AST.unann else-val)))))
+        (= tag 'case)
+          (let [else-val (Map.get m 'else)]
+            (cons 'case
+                  (cons (AST.unann (Map.get m 'scrutinee))
+                        (AST.unann-case-cases (Map.get m 'cases)
+                                              (if (= nil else-val)
+                                                nil
+                                                (AST.unann else-val))))))
+        (= tag 'for)
+          (list 'for
+                (collect-into
+                  (list (Map.get m 'variable)
+                        (AST.unann (Map.get m 'from))
+                        (AST.unann (Map.get m 'to)))
+                  array)
+                (AST.unann (Map.get m 'body)))
+        (= tag 'defmacro)
+          (list 'defmacro
+                (Map.get m 'name)
+                (Map.get m 'arguments)
+                (AST.unann (Map.get m 'body)))
+        (= tag 'definterface)
+          (list 'definterface (Map.get m 'name) (Map.get m 'signature))
+        (= tag 'use) (list 'use (Map.get m 'module))
+        (= tag 'load) (list 'load (Map.get m 'path))
+        (= tag 'doc) (list 'doc (Map.get m 'name) (Map.get m 'docstring))
+        (List.in? tag '(hidden private)) (list tag (Map.get m 'name))
+        (= tag 'implements)
+          (list 'implements (Map.get m 'interface) (Map.get m 'function))
         (macro-error (list "unann: unknown type tag " tag))))))
