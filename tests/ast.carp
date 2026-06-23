@@ -554,18 +554,23 @@
 
   ; new builtins: cond
   (assert-dynamic-op test
-                     {'value '(cond true 1 2)
+                     {'value '(cond true 1 false 2 3)
                       'type 'cond
                       'cases (list
                         {'condition {'value true
                                      'type 'boolean}
                          'body {'value 1
                                 'type 'number
+                                'width 'int}}
+                        {'condition {'value false
+                                     'type 'boolean}
+                         'body {'value 2
+                                'type 'number
                                 'width 'int}})
-                      'else {'value 2
+                      'else {'value 3
                              'type 'number
                              'width 'int}}
-                     (AST.ann '(cond true 1 2))
+                     (AST.ann '(cond true 1 false 2 3))
                      "annotates cond"
                      Dynamic.Map.=)
 
@@ -692,8 +697,8 @@
 
   ; roundtrips for new builtins
   (assert-dynamic-op test
-                     '(cond true 1 2)
-                     (AST.unann (AST.ann '(cond true 1 2)))
+                     '(cond true 1 false 2 3)
+                     (AST.unann (AST.ann '(cond true 1 false 2 3)))
                      "roundtrip cond"
                      =)
   (assert-dynamic-op test
