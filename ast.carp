@@ -1,8 +1,8 @@
 (doc AST "Structural annotations for Carp source forms.
 
 `ann` walks a quoted source form and produces a dynamic map describing
-it — one variant per Carp special form or macro, plus one per literal
-kind. `unann` reverses the process, reconstructing the source from a
+it — one variant per Carp special form, plus one per literal kind.
+`unann` reverses the process, reconstructing the source from a
 (possibly rewritten) annotation map. The pair lets you inspect, analyze,
 and rewrite Carp code as data without tripping over the irregular shapes
 of def/defn/let/match/register/etc.")
@@ -297,7 +297,6 @@ of def/defn/let/match/register/etc.")
      'interface (cadr l)
      'function (caddr l)})
 
-  ; Maps special forms and macros to their annotation handlers.
   (hidden BUILTINS)
   (defdynamic BUILTINS
     {'defdynamic (curry AST.ann-def false)
@@ -390,8 +389,6 @@ Special forms:
 - `'use`: `'module` (raw).
 - `'load`: `'path` (raw).
 - `'doc`: `'name`, `'docstring`.
-
-Macros:
 - `'cond`: `'cases` (list of `{'condition 'body}`), `'else` (or `nil`).
 - `'case`: `'scrutinee`, `'cases` (list of `{'pattern 'body}`; patterns
   are raw), `'else` (or `nil`).
