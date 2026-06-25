@@ -190,6 +190,44 @@ of def/defn/let/match/register/etc.")
      'scrutinee (AST.ann (cadr l))
      'cases (AST.ann-match-cases (cddr l))})
 
+  (hidden ann-address)
+  (defndynamic ann-address [l]
+    {'value l
+     'type 'address
+     'body (AST.ann (cadr l))})
+
+  (hidden ann-defmacro)
+  (defndynamic ann-defmacro [l]
+    {'value l
+     'type 'defmacro
+     'name (cadr l)
+     'arguments (caddr l)
+     'body (AST.ann (cadddr l))})
+
+  (hidden ann-definterface)
+  (defndynamic ann-definterface [l]
+    {'value l
+     'type 'definterface
+     'name (cadr l)
+     'signature (caddr l)})
+
+  (hidden ann-use)
+  (defndynamic ann-use [l] {'value l
+                            'type 'use
+                            'module (cadr l)})
+
+  (hidden ann-load)
+  (defndynamic ann-load [l] {'value l
+                             'type 'load
+                             'path (cadr l)})
+
+  (hidden ann-doc)
+  (defndynamic ann-doc [l]
+    {'value l
+     'type 'doc
+     'name (cadr l)
+     'docstring (caddr l)})
+
   (hidden BUILTINS)
   (defdynamic BUILTINS
     {'defdynamic (curry AST.ann-def false)
@@ -213,7 +251,13 @@ of def/defn/let/match/register/etc.")
      'deref AST.ann-deref
      'with AST.ann-with
      'match AST.ann-match
-     'match-ref AST.ann-match-ref})
+     'match-ref AST.ann-match-ref
+     'address AST.ann-address
+     'defmacro AST.ann-defmacro
+     'definterface AST.ann-definterface
+     'use AST.ann-use
+     'load AST.ann-load
+     'doc AST.ann-doc})
 
   (hidden ann-list)
   (defndynamic ann-list [l]
@@ -264,6 +308,12 @@ Special forms:
 - `'with`: `'module` (raw), `'body` (list).
 - `'match` / `'match-ref`: `'scrutinee`, `'cases` (list of
   `{'pattern 'body}`; patterns are raw).
+- `'address`: `'body`.
+- `'defmacro`: `'name`, `'arguments` (raw), `'body`.
+- `'definterface`: `'name`, `'signature` (raw).
+- `'use`: `'module` (raw).
+- `'load`: `'path` (raw).
+- `'doc`: `'name`, `'docstring`.
 
 Unknown forms produce a `macro-error`.")
   (defndynamic ann [l]
@@ -366,7 +416,7 @@ produce a `macro-error`.")
                 (AST.unann (Map.get m 'condition))
                 (AST.unann (Map.get m 'then))
                 (AST.unann (Map.get m 'else)))
-        (List.in? tag '(quote ref deref))
+        (List.in? tag '(quote ref deref address))
           (list tag (AST.unann (Map.get m 'body)))
         (= tag 'deftype) (list 'deftype (Map.get m 'name) (Map.get m 'body))
         (= tag 'register) (AST.unann-register m)
@@ -398,4 +448,14 @@ produce a `macro-error`.")
           (cons 'match-ref
                 (cons (AST.unann (Map.get m 'scrutinee))
                       (AST.unann-match-cases (Map.get m 'cases))))
+        (= tag 'defmacro)
+          (list 'defmacro
+                (Map.get m 'name)
+                (Map.get m 'arguments)
+                (AST.unann (Map.get m 'body)))
+        (= tag 'definterface)
+          (list 'definterface (Map.get m 'name) (Map.get m 'signature))
+        (= tag 'use) (list 'use (Map.get m 'module))
+        (= tag 'load) (list 'load (Map.get m 'path))
+        (= tag 'doc) (list 'doc (Map.get m 'name) (Map.get m 'docstring))
         (macro-error (list "unann: unknown type tag " tag))))))
