@@ -92,6 +92,12 @@ or <code>nil</code>).</li>
 <li><code>'with</code>: <code>'module</code> (raw), <code>'body</code> (list).</li>
 <li><code>'match</code> / <code>'match-ref</code>: <code>'scrutinee</code>, <code>'cases</code> (list of
 <code>{'pattern 'body}</code>; patterns are raw).</li>
+<li><code>'address</code>: <code>'body</code>.</li>
+<li><code>'defmacro</code>: <code>'name</code>, <code>'arguments</code> (raw), <code>'body</code>.</li>
+<li><code>'definterface</code>: <code>'name</code>, <code>'signature</code> (raw).</li>
+<li><code>'use</code>: <code>'module</code> (raw).</li>
+<li><code>'load</code>: <code>'path</code> (raw).</li>
+<li><code>'doc</code>: <code>'name</code>, <code>'docstring</code>.</li>
 </ul>
 <p>Unknown forms produce a <code>macro-error</code>.</p>
 

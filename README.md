@@ -23,7 +23,7 @@ and walks it back to reconstruct a (possibly rewritten) form.
 ## Installation
 
 ```clojure
-(load "git@github.com:carpentry-org/ast@0.1.0")
+(load "git@github.com:carpentry-org/ast@0.1.1")
 ```
 
 ## Usage
