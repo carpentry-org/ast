@@ -77,7 +77,9 @@ variant tag. Additional keys depend on the tag.</p>
 <li><code>'while</code>: <code>'condition</code>, <code>'body</code>.</li>
 <li><code>'if</code>: <code>'condition</code>, <code>'then</code>, <code>'else</code>.</li>
 <li><code>'quote</code>, <code>'ref</code>, <code>'deref</code>: <code>'body</code>.</li>
-<li><code>'deftype</code>: <code>'name</code>, <code>'body</code> (raw members).</li>
+<li><code>'deftype</code>: <code>'name</code>, plus either <code>'body</code> (raw members) for a product
+type or <code>'cases</code> (list of raw variant forms) for a sum type. <code>unann</code>
+emits a sum type whenever <code>'cases</code> is present and non-<code>nil</code>.</li>
 <li><code>'register</code>: <code>'name</code>, <code>'signature</code> (raw), <code>'external-name</code> (string
 or <code>nil</code>).</li>
 <li><code>'register-type</code>: <code>'name</code>, <code>'body</code> (raw members or <code>'unknown</code>),
