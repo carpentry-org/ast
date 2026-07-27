@@ -54,10 +54,15 @@ of def/defn/let/match/register/etc.")
 
   (hidden ann-deftype)
   (defndynamic ann-deftype [l]
-    {'value l
-     'type 'deftype
-     'name (cadr l)
-     'body (caddr l)})
+    (if (array? (caddr l))
+      {'value l
+       'type 'deftype
+       'name (cadr l)
+       'body (caddr l)}
+      {'value l
+       'type 'deftype
+       'name (cadr l)
+       'cases (cddr l)}))
 
   (hidden ann-register)
   (defndynamic ann-register [l]
@@ -293,7 +298,9 @@ Special forms:
 - `'while`: `'condition`, `'body`.
 - `'if`: `'condition`, `'then`, `'else`.
 - `'quote`, `'ref`, `'deref`: `'body`.
-- `'deftype`: `'name`, `'body` (raw members).
+- `'deftype`: `'name`, plus either `'body` (raw members) for a product
+  type or `'cases` (list of raw variant forms) for a sum type. `unann`
+  emits a sum type whenever `'cases` is present and non-`nil`.
 - `'register`: `'name`, `'signature` (raw), `'external-name` (string
   or `nil`).
 - `'register-type`: `'name`, `'body` (raw members or `'unknown`),
@@ -334,6 +341,14 @@ Unknown forms produce a `macro-error`.")
                                   'type 'character}
       (macro-error
         (list "ann got an unexpected value: " l " of type " (dynamic-type l)))))
+
+  (hidden unann-deftype)
+  (defndynamic unann-deftype [m]
+    (let [name (Map.get m 'name)
+          cases (Map.get m 'cases)]
+      (if (= nil cases)
+        (list 'deftype name (Map.get m 'body))
+        (cons 'deftype (cons name cases)))))
 
   (hidden unann-register)
   (defndynamic unann-register [m]
@@ -418,7 +433,7 @@ produce a `macro-error`.")
                 (AST.unann (Map.get m 'else)))
         (List.in? tag '(quote ref deref address))
           (list tag (AST.unann (Map.get m 'body)))
-        (= tag 'deftype) (list 'deftype (Map.get m 'name) (Map.get m 'body))
+        (= tag 'deftype) (AST.unann-deftype m)
         (= tag 'register) (AST.unann-register m)
         (= tag 'register-type) (AST.unann-register-type m)
         (= tag 'defmodule)

@@ -199,6 +199,34 @@
                      Dynamic.Map.=)
 
   (assert-dynamic-op test
+                     {'value '(deftype Color
+                        (Red [])
+                        (Green [])
+                        (Blue []))
+                      'type 'deftype
+                      'name 'Color
+                      'cases '((Red []) (Green []) (Blue []))}
+                     (AST.ann '(deftype Color
+                         (Red [])
+                         (Green [])
+                         (Blue [])))
+                     "annotates sum deftype with every variant"
+                     Dynamic.Map.=)
+
+  (assert-dynamic-op test
+                     {'value '(deftype (Maybe a)
+                        (Just [a])
+                        (Nothing []))
+                      'type 'deftype
+                      'name '(Maybe a)
+                      'cases '((Just [a]) (Nothing []))}
+                     (AST.ann '(deftype (Maybe a)
+                         (Just [a])
+                         (Nothing [])))
+                     "annotates generic sum deftype"
+                     Dynamic.Map.=)
+
+  (assert-dynamic-op test
                      {'value '(register foo (Fn [] Int))
                       'type 'register
                       'name 'foo
@@ -465,6 +493,60 @@
                      "roundtrip deftype"
                      =)
   (assert-dynamic-op test
+                     '(deftype (Pair a b) [fst a
+                                           snd b])
+                     (AST.unann (AST.ann '(deftype (Pair a b) [fst a
+                                                               snd b])))
+                     "roundtrip generic product deftype"
+                     =)
+  (assert-dynamic-op test
+                     '(deftype Wrapper (Wrap [Int]))
+                     (AST.unann (AST.ann '(deftype Wrapper (Wrap [Int]))))
+                     "roundtrip single-variant sum deftype"
+                     =)
+  (assert-dynamic-op test
+                     '(deftype Toggle
+                       (On [])
+                       (Off []))
+                     (AST.unann (AST.ann '(deftype Toggle
+                                           (On [])
+                                           (Off []))))
+                     "roundtrip two-variant sum deftype"
+                     =)
+  (assert-dynamic-op test
+                     '(deftype Color
+                       (Red [])
+                       (Green [])
+                       (Blue []))
+                     (AST.unann
+                       (AST.ann '(deftype Color
+                           (Red [])
+                           (Green [])
+                           (Blue []))))
+                     "roundtrip three-variant sum deftype"
+                     =)
+  (assert-dynamic-op test
+                     '(deftype Shape
+                       (Circle [Double])
+                       (Rect [Double Double]))
+                     (AST.unann
+                       (AST.ann
+                         '(deftype Shape
+                           (Circle [Double])
+                           (Rect [Double Double]))))
+                     "roundtrip sum deftype whose variants carry fields"
+                     =)
+  (assert-dynamic-op test
+                     '(deftype (Maybe a)
+                       (Just [a])
+                       (Nothing []))
+                     (AST.unann
+                       (AST.ann '(deftype (Maybe a)
+                           (Just [a])
+                           (Nothing []))))
+                     "roundtrip generic sum deftype"
+                     =)
+  (assert-dynamic-op test
                      '(register foo (Fn [] Int))
                      (AST.unann (AST.ann '(register foo (Fn [] Int))))
                      "roundtrip register without override"
@@ -659,4 +741,16 @@
                                   'else
                                   (Map.get a 'then))))
                      "rewrite if by swapping then/else via the annotation"
+                     =)
+
+  (assert-dynamic-op test
+                     '(deftype Color
+                       (Red [])
+                       (Green []))
+                     (AST.unann
+                       (let [a (AST.ann '(deftype Color (Red [])))]
+                         (Map.put a
+                                  'cases
+                                  (append (Map.get a 'cases) '((Green []))))))
+                     "rewrite deftype by adding a variant via the annotation"
                      =))
