@@ -264,13 +264,18 @@ of def/defn/let/match/register/etc.")
      'load AST.ann-load
      'doc AST.ann-doc})
 
+  ; `&x`/`~x` read as lists headed by a Ref/Deref object, not by a symbol
+  (hidden head-key)
+  (defndynamic head-key [l]
+    (let [t (dynamic-type (car l))] (if (List.in? t '(ref deref)) t (car l))))
+
   (hidden ann-list)
   (defndynamic ann-list [l]
     (cond
       (empty? l) {'value l
                   'type 'unit}
-      (Map.contains? AST.BUILTINS (car l))
-        (let [f (Map.get AST.BUILTINS (car l))] (f l))
+      (Map.contains? AST.BUILTINS (AST.head-key l))
+        (let [f (Map.get AST.BUILTINS (AST.head-key l))] (f l))
       {'value l
        'type 'application
        'function (AST.ann (car l))
@@ -297,7 +302,9 @@ Special forms:
 - `'do`: `'body` (list), `'returns` (last element).
 - `'while`: `'condition`, `'body`.
 - `'if`: `'condition`, `'then`, `'else`.
-- `'quote`, `'ref`, `'deref`: `'body`.
+- `'quote`, `'ref`, `'deref`: `'body`. The reader sugars `&x` and `~x`
+  annotate as `'ref` and `'deref`, exactly like the longhand
+  `(ref x)` and `(deref x)`.
 - `'deftype`: `'name`, plus either `'body` (raw members) for a product
   type or `'cases` (list of raw variant forms) for a sum type. `unann`
   emits a sum type whenever `'cases` is present and non-`nil`.
@@ -396,7 +403,10 @@ Unknown forms produce a `macro-error`.")
 produced by `ann`.
 
 The round-trip property holds: `(unann (ann x))` equals `x` for every
-supported form. Because the reconstruction reads the variant-specific
+supported form, with one exception — the reader sugars `&x` and `~x`
+come back as the longhand `(ref x)` and `(deref x)`. Those are the same
+forms; they print and compile identically, but they are not `=` to the
+sugared input. Because the reconstruction reads the variant-specific
 child keys rather than the original `'value` slot, you can modify an
 annotation and `unann` will emit the rewritten form. Unknown type tags
 produce a `macro-error`.")

@@ -76,7 +76,9 @@ variant tag. Additional keys depend on the tag.</p>
 <li><code>'do</code>: <code>'body</code> (list), <code>'returns</code> (last element).</li>
 <li><code>'while</code>: <code>'condition</code>, <code>'body</code>.</li>
 <li><code>'if</code>: <code>'condition</code>, <code>'then</code>, <code>'else</code>.</li>
-<li><code>'quote</code>, <code>'ref</code>, <code>'deref</code>: <code>'body</code>.</li>
+<li><code>'quote</code>, <code>'ref</code>, <code>'deref</code>: <code>'body</code>. The reader sugars <code>&amp;x</code> and <code>~x</code>
+annotate as <code>'ref</code> and <code>'deref</code>, exactly like the longhand
+<code>(ref x)</code> and <code>(deref x)</code>.</li>
 <li><code>'deftype</code>: <code>'name</code>, plus either <code>'body</code> (raw members) for a product
 type or <code>'cases</code> (list of raw variant forms) for a sum type. <code>unann</code>
 emits a sum type whenever <code>'cases</code> is present and non-<code>nil</code>.</li>
@@ -124,7 +126,10 @@ or <code>nil</code>).</li>
                         <p>reconstructs a Carp source form from an annotation map
 produced by <code>ann</code>.</p>
 <p>The round-trip property holds: <code>(unann (ann x))</code> equals <code>x</code> for every
-supported form. Because the reconstruction reads the variant-specific
+supported form, with one exception — the reader sugars <code>&amp;x</code> and <code>~x</code>
+come back as the longhand <code>(ref x)</code> and <code>(deref x)</code>. Those are the same
+forms; they print and compile identically, but they are not <code>=</code> to the
+sugared input. Because the reconstruction reads the variant-specific
 child keys rather than the original <code>'value</code> slot, you can modify an
 annotation and <code>unann</code> will emit the rewritten form. Unknown type tags
 produce a <code>macro-error</code>.</p>
