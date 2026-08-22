@@ -2,6 +2,11 @@
 (load "Test.carp")
 (use Test)
 
+(defmacro emit-roundtrip [form] (AST.unann (AST.ann form)))
+
+(emit-roundtrip (defn sum-len [xs] (Array.length &xs)))
+(emit-roundtrip (defn apply-ref [f] (~f 41)))
+
 (deftest test
   (assert-dynamic-op test
                      {'value 'foo
@@ -753,4 +758,98 @@
                                   'cases
                                   (append (Map.get a 'cases) '((Green []))))))
                      "rewrite deftype by adding a variant via the annotation"
-                     =))
+                     =)
+
+  ; reader sugar: &x and ~x
+  (assert-dynamic-op test
+                     {'value '&x
+                      'type 'ref
+                      'body {'value 'x
+                             'type 'symbol}}
+                     (AST.ann '&x)
+                     "annotates ref sugar"
+                     Dynamic.Map.=)
+
+  (assert-dynamic-op test
+                     {'value '~x
+                      'type 'deref
+                      'body {'value 'x
+                             'type 'symbol}}
+                     (AST.ann '~x)
+                     "annotates deref sugar"
+                     Dynamic.Map.=)
+
+  (assert-dynamic-op test
+                     'ref
+                     (Map.get (AST.ann '&[1 2 3]) 'type)
+                     "annotates ref sugar on an array literal"
+                     =)
+
+  (assert-dynamic-op test
+                     'ref
+                     (Map.get (AST.ann '&"s") 'type)
+                     "annotates ref sugar on a string literal"
+                     =)
+
+  (assert-dynamic-op test
+                     'application
+                     (Map.get (Map.get (AST.ann '&(g x)) 'body) 'type)
+                     "recurses into a call behind ref sugar"
+                     =)
+
+  (assert-dynamic-op test
+                     '(f (ref x))
+                     (AST.unann (AST.ann '(f &x)))
+                     "roundtrip ref sugar in an application"
+                     =)
+
+  (assert-dynamic-op test
+                     '((deref f) 41)
+                     (AST.unann (AST.ann '(~f 41)))
+                     "roundtrip deref sugar in application head"
+                     =)
+
+  (assert-dynamic-op test
+                     '(Array.length (ref [1 2 3]))
+                     (AST.unann (AST.ann '(Array.length &[1 2 3])))
+                     "roundtrip ref sugar on an array literal"
+                     =)
+
+  (assert-dynamic-op test
+                     '(f (ref "s"))
+                     (AST.unann (AST.ann '(f &"s")))
+                     "roundtrip ref sugar on a string literal"
+                     =)
+
+  (assert-dynamic-op test
+                     '(f (ref (g x)))
+                     (AST.unann (AST.ann '(f &(g x))))
+                     "roundtrip ref sugar on a call"
+                     =)
+
+  (assert-dynamic-op test
+                     '(defn f [xs] (Array.length (ref xs)))
+                     (AST.unann (AST.ann '(defn f [xs] (Array.length &xs))))
+                     "roundtrip ref sugar in a defn body"
+                     =)
+
+  (assert-dynamic-op test
+                     '(let [a (ref x)] (f a))
+                     (AST.unann (AST.ann '(let [a &x] (f a))))
+                     "roundtrip ref sugar in a let binding"
+                     =)
+
+  (assert-dynamic-op test
+                     '(if p (ref x) (ref y))
+                     (AST.unann (AST.ann '(if p &x &y)))
+                     "roundtrip ref sugar in if branches"
+                     =)
+
+  (assert-dynamic-op test
+                     '(f (ref (ref x)))
+                     (AST.unann (AST.ann '(f &&x)))
+                     "roundtrip nested ref sugar"
+                     =)
+
+  (assert-equal test 3 (sum-len [1 2 3]) "emitted ref form compiles")
+  (assert-equal test 42 (apply-ref &Int.inc) "emitted deref form compiles"))

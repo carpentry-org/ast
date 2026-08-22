@@ -53,6 +53,15 @@ is an identity:
 ; => true
 ```
 
+With one exception: the reader sugars `&x` and `~x` annotate as `ref`
+and `deref` and come back as the longhand `(ref x)` and `(deref x)`.
+Those are the same forms — they print and compile identically — but they
+are not `=` to the sugared input.
+
+```clojure
+(AST.unann (AST.ann '(Array.length &xs)))  ; => (Array.length (ref xs))
+```
+
 Because `unann` reads variant-specific child keys rather than the
 stashed `'value` slot, you can mutate an annotation before reversing it
 to rewrite source:
